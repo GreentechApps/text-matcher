@@ -47,7 +47,7 @@ public class HadithInterlinking {
         while (rs.next()) {
             long t = System.currentTimeMillis();
             String id = rs.getString(1);
-            String arabic = DiacriticInsensitiveSearch.normalize(rs.getString(2));
+            String arabic = ArabicUtils.normalize(rs.getString(2));
 
             if (arabic.isEmpty()) {
                 continue;
@@ -103,7 +103,7 @@ public class HadithInterlinking {
         ArrayList<HadithObject> hadithObjects = new ArrayList<>(45146);
         long total = System.currentTimeMillis();
         while (rs.next()) {
-            String arabic = DiacriticInsensitiveSearch.normalize(rs.getString(5).replace("(", "").replace(")", ""));
+            String arabic = ArabicUtils.normalize(rs.getString(5).replace("(", "").replace(")", ""));
 
             if (arabic.isEmpty() || arabic.length() < 10) {
                 continue;

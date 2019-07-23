@@ -6,14 +6,14 @@ class DiacriticsResearch {
 
         String dua = "اذهب الباس رب الناس واشف انت الشافي لا شفاء الا شفاءك شفاء لا يغادر سقما";
 
-        String s = DiacriticInsensitiveSearch.removeDiacritic(dua);
-        String s2 = DiacriticInsensitiveSearch.normalize(dua);
+        String s = ArabicUtils.removeDiacritic(dua);
+        String s2 = ArabicUtils.normalize(dua);
         String s3 = dua.replaceAll("(ّ)?(َ)?(ً)?(ُ)?(ٌ)?(ِ)?(ٍ)?(~)?(ْ)?", "");
         String s4 = ArabicUtils.normalize(dua);
 
         System.out.println(dua + "\n" + s + "\n" + s2 + "\n" + s3 + "\n" + s4);
 
-        HashMap<String, String> map = DiacriticInsensitiveSearch.createSqliteRemoveString("\"،.?,()_-{}ـ*");
+        HashMap<String, String> map = ArabicUtils.createSqliteRemoveString("\"،.?,()_-{}ـ*");
 
 //       map.put("ا", "ا");
 //       map.put("آ", "ا");
@@ -25,7 +25,7 @@ class DiacriticsResearch {
 //       map.put("ة", "ه");
 //       map.put("گ", "ك");
 
-        String arabic = DiacriticInsensitiveSearch.createSqliteReplace("text_ar_diacless", map);
+        String arabic = ArabicUtils.createSqliteReplace("text_ar_diacless", map);
         System.out.println(arabic);
     }
 

@@ -41,7 +41,7 @@ public class HisnulMuslimInterlinking {
 
         while (rs.next()) {
             String id = rs.getString(1);
-            String arabic = DiacriticInsensitiveSearch.normalize(rs.getString(2).replace("(", "").replace(")", ""));
+            String arabic = ArabicUtils.normalize(rs.getString(2).replace("(", "").replace(")", ""));
 
             if (arabic.isEmpty() || arabic.length() < 15) {
                 continue;
@@ -108,7 +108,7 @@ public class HisnulMuslimInterlinking {
 
         while (rs.next()) {
             long t = System.currentTimeMillis();
-            String arabic = DiacriticInsensitiveSearch.normalize(rs.getString(2).replace("(", "").replace(")", ""));
+            String arabic = ArabicUtils.normalize(rs.getString(2).replace("(", "").replace(")", ""));
 
             if (arabic.isEmpty() || arabic.length() < 10) {
                 continue;
