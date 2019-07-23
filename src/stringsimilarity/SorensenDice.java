@@ -108,7 +108,7 @@ public class SorensenDice extends ShingleBased implements
         return 2.0 * inter / (profile1.size() + profile2.size());
     }
 
-    public final double similarity(final Map<String, Integer>  profile1, Map<String, Integer> profile2) {
+    public final double similarity(final Map<String, Integer> profile1, Map<String, Integer> profile2) {
 //        if (s1 == null) {
 //            throw new NullPointerException("s1 must not be null");
 //        }
