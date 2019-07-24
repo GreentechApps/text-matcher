@@ -114,12 +114,17 @@ public class HadithInterlinking {
 
         System.out.println("Added to memory Done " + (System.currentTimeMillis() - total) + " ms");
 
+        String query = "update hadiths set related_en = ? where rowid=?";
+        PreparedStatement preparedStatement = connectionHadith.prepareStatement(query);
+
         for (HadithObject currentHadith : hadithObjects) {
             long t1 = System.currentTimeMillis();
+
+            String oldAppReference = currentHadith.getRelated_en();
+            StringBuilder related_en = new StringBuilder();
+
             for (HadithObject checkForMatchHadith : hadithObjects) {
 
-                String oldAppReference = currentHadith.getRelated_en();
-                StringBuilder related_en = new StringBuilder();
                 //if length is too much far that means they are really not similar
                 if (Math.abs(currentHadith.getProfile().size() - checkForMatchHadith.getProfile().size()) > 100) {
                     continue;
@@ -128,28 +133,27 @@ public class HadithInterlinking {
                 double similarity = cos.similarity(currentHadith.getProfile(), checkForMatchHadith.getProfile());
                 if (similarity > 0.9) {
 
-                    if (oldAppReference.contains("9:" + checkForMatchHadith.getReference())) {
+                    if (oldAppReference.contains("2:" + checkForMatchHadith.getReference()) || oldAppReference.contains("9:" + checkForMatchHadith.getReference()) || oldAppReference.contains("8:" + checkForMatchHadith.getReference())) {
                         continue;
                     }
 
-                    related_en.append(",").append("7:" + checkForMatchHadith.getReference());
+                    related_en.append(",").append("9:" + checkForMatchHadith.getReference());
 
                     System.out.println("Found text similariry of " + similarity + " at " + checkForMatchHadith.getReference() + " for " + currentHadith.getRowid());
                 }
-
-                if (related_en.length() > 0) {
-                    oldAppReference = oldAppReference + related_en;
-                    if (oldAppReference.startsWith(",")) {
-                        oldAppReference = oldAppReference.replaceFirst(",", "");
-                    }
-
-                    String query = "update hadiths set related_en = '" + oldAppReference + "' where rowid=" + currentHadith.getRowid();
-                    PreparedStatement preparedStatement = connectionHadith.prepareStatement(query);
-//                    preparedStatement.executeUpdate();
-                    System.out.println("Updated reference at " + currentHadith.getRowid() + ": " + related_en);
-                }
             }
 
+            if (related_en.length() > 0) {
+                oldAppReference = oldAppReference + related_en;
+                if (oldAppReference.startsWith(",")) {
+                    oldAppReference = oldAppReference.replaceFirst(",", "");
+                }
+
+                preparedStatement.setString(1, oldAppReference);
+                preparedStatement.setLong(2, currentHadith.getRowid());
+                preparedStatement.executeUpdate();
+                System.out.println("Updated reference at " + currentHadith.getRowid() + ": " + related_en);
+            }
             System.out.println("Done " + currentHadith.getRowid() + " in " + (System.currentTimeMillis() - t1) + " ms");
         }
 

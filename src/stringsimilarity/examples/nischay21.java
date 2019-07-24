@@ -49,8 +49,8 @@ public class nischay21 {
         algos.add(new NGram());
         algos.add(new Damerau());
         algos.add(new Jaccard());
-        algos.add(new SorensenDice());
-        algos.add(new Cosine());
+        algos.add(new SorensenDice(2));
+        algos.add(new Cosine(2));
 
 
         System.out.println("S1 vs S2");
