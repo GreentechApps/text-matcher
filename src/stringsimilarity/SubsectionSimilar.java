@@ -38,7 +38,7 @@ import java.util.Set;
  * @author Thibault Debatty
  */
 
-public class SorensenDice extends ShingleBased implements
+public class SubsectionSimilar extends ShingleBased implements
         NormalizedStringDistance, NormalizedStringSimilarity {
 
     /**
@@ -52,7 +52,7 @@ public class SorensenDice extends ShingleBased implements
      *
      * @param k
      */
-    public SorensenDice(final int k) {
+    public SubsectionSimilar(final int k) {
         super(k);
     }
 
@@ -65,7 +65,7 @@ public class SorensenDice extends ShingleBased implements
      * (|A| + |B|). Attention: Sorensen-Dice distance (and similarity) does not
      * satisfy triangle inequality. Default k is 3.
      */
-    public SorensenDice() {
+    public SubsectionSimilar() {
         super();
     }
 
@@ -101,7 +101,7 @@ public class SorensenDice extends ShingleBased implements
         union.addAll(profile1.keySet());
         union.addAll(profile2.keySet());
 
-        int inter = 0;
+        double inter = 0;
 
         for (String key : union) {
             if (profile1.containsKey(key) && profile2.containsKey(key)) {
@@ -109,7 +109,7 @@ public class SorensenDice extends ShingleBased implements
             }
         }
 
-        return 2.0 * inter / (profile1.size() + profile2.size());
+        return  inter / profile1.size();
     }
 
     /**

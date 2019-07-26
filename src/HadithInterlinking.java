@@ -1,4 +1,6 @@
 import stringsimilarity.Cosine;
+import stringsimilarity.SorensenDice;
+import stringsimilarity.SubsectionSimilar;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -27,8 +29,9 @@ public class HadithInterlinking {
             ///todo need to replace ' ” ”
 //        System.out.println("removed puntuations");
 
-//            matchUsingSqliteMatch();
+            matchUsingSqliteMatch();
             matchUsingDiceCoef();
+//            checkStringSimilarityForErros();
 
             System.out.println("Successful");
         } catch (Exception e) {
@@ -39,25 +42,28 @@ public class HadithInterlinking {
     private static void matchUsingSqliteMatch() throws SQLException {
         Connection connectionHadith = DriverManager.getConnection("jdbc:sqlite:D:\\hadith.db");
 
-        Statement stmtHadith = connectionHadith.createStatement();
-
         PreparedStatement statement = connectionHadith.prepareStatement("select rowid as id, text_ar_diacless, related_en from hadiths");
         ResultSet rs = statement.executeQuery();
+
+        String query = "select CollectionID, BookID, HadithID from hadiths where text_ar_diacless match ? and rowid!=?";
+        PreparedStatement preparedStatementSearch = connectionHadith.prepareStatement(query);
+        PreparedStatement preparedStatementUpdate = connectionHadith.prepareStatement("update hadiths set related_en = ? where rowid=?");
 
         while (rs.next()) {
             long t = System.currentTimeMillis();
             String id = rs.getString(1);
             String arabic = ArabicUtils.normalize(rs.getString(2));
 
-            if (arabic.isEmpty()) {
+            if (arabic.isEmpty() || arabic.length() < 15) {
                 continue;
             }
 
             String oldAppReference = rs.getString(3);
             StringBuilder related_en = new StringBuilder();
-            String selectQuery = "select CollectionID, BookID, HadithID from hadiths where text_ar_diacless match '" + arabic + "' and rowid!=" + id;
 
-            ResultSet rsH = stmtHadith.executeQuery(selectQuery);
+            preparedStatementSearch.setString(1, arabic);
+            preparedStatementSearch.setLong(2, Long.parseLong(id));
+            ResultSet rsH = preparedStatementSearch.executeQuery();
 
             while (rsH.next()) {
                 String reference = rsH.getString(1) + ":" + rsH.getString(2) + ":" + rsH.getString(3);
@@ -76,9 +82,9 @@ public class HadithInterlinking {
                     oldAppReference = oldAppReference.replaceFirst(",", "");
                 }
 
-                String query = "update hadiths set related_en = '" + oldAppReference + "' where rowid=" + id;
-                PreparedStatement preparedStatement = connectionHadith.prepareStatement(query);
-                preparedStatement.executeUpdate();
+                preparedStatementUpdate.setString(1, oldAppReference);
+                preparedStatementUpdate.setLong(2, Long.parseLong(id));
+                preparedStatementUpdate.executeUpdate();
                 System.out.println("Updated reference at " + id + ": " + related_en);
             }
             System.out.println("Done " + id + " in " + (System.currentTimeMillis() - t) + " ms");
@@ -97,8 +103,9 @@ public class HadithInterlinking {
         Statement stmtHadith = connectionHadith.createStatement();
 
         ResultSet rs = stmtHadith.executeQuery("select rowid as id, CollectionID, BookID, HadithID, text_ar_diacless, related_en from hadiths");
-//            SorensenDice sd = new SorensenDice(2);
-        Cosine cos = new Cosine(2);
+        SorensenDice sd = new SorensenDice(2);
+//        Cosine cos = new Cosine(3);
+//        SubsectionSimilar sd = new SubsectionSimilar(3);
 
         ArrayList<HadithObject> hadithObjects = new ArrayList<>(45146);
         long total = System.currentTimeMillis();
@@ -109,7 +116,7 @@ public class HadithInterlinking {
                 continue;
             }
             String reference = rs.getString(2) + ":" + rs.getString(3) + ":" + rs.getString(4);
-            hadithObjects.add(new HadithObject(cos.getProfile(arabic), rs.getLong(1), reference, rs.getString(6)));
+            hadithObjects.add(new HadithObject(sd.getProfile(arabic), rs.getLong(1), reference, rs.getString(6)));
         }
 
         System.out.println("Added to memory Done " + (System.currentTimeMillis() - total) + " ms");
@@ -119,6 +126,9 @@ public class HadithInterlinking {
 
         for (HadithObject currentHadith : hadithObjects) {
             long t1 = System.currentTimeMillis();
+            if (currentHadith.getRowid() > 10) {
+                break;
+            }
 
             String oldAppReference = currentHadith.getRelated_en();
             StringBuilder related_en = new StringBuilder();
@@ -126,20 +136,24 @@ public class HadithInterlinking {
             for (HadithObject checkForMatchHadith : hadithObjects) {
 
                 //if length is too much far that means they are really not similar
-                if (Math.abs(currentHadith.getProfile().size() - checkForMatchHadith.getProfile().size()) > 100) {
+//                if (Math.abs(currentHadith.getProfile().size() - checkForMatchHadith.getProfile().size()) > 100) {
+//                    continue;
+//                }
+                //same hadith
+                if (currentHadith.getRowid() == checkForMatchHadith.getRowid()) {
                     continue;
                 }
 
-                double similarity = cos.similarity(currentHadith.getProfile(), checkForMatchHadith.getProfile());
-                if (similarity > 0.9) {
+                if (oldAppReference.contains("2:" + checkForMatchHadith.getReference()) || oldAppReference.contains("9:" + checkForMatchHadith.getReference()) || oldAppReference.contains("8:" + checkForMatchHadith.getReference())) {
+                    continue;
+                }
 
-                    if (oldAppReference.contains("2:" + checkForMatchHadith.getReference()) || oldAppReference.contains("9:" + checkForMatchHadith.getReference()) || oldAppReference.contains("8:" + checkForMatchHadith.getReference())) {
-                        continue;
-                    }
+                double similarity = sd.similarity(currentHadith.getProfile(), checkForMatchHadith.getProfile());
+                if (similarity > 0.75) {
 
                     related_en.append(",").append("9:" + checkForMatchHadith.getReference());
 
-                    System.out.println("Found text similariry of " + similarity + " at " + checkForMatchHadith.getReference() + " for " + currentHadith.getRowid());
+                    System.out.println("Found similariry of " + similarity + " at " + checkForMatchHadith.getReference() + " for " + currentHadith.getRowid());
                 }
             }
 
@@ -160,6 +174,49 @@ public class HadithInterlinking {
         rs.close();
         connectionHadith.close();
         System.out.println("Done Total in " + (System.currentTimeMillis() - total) + " ms");
+    }
+
+
+    public static void checkStringSimilarityForErros() throws SQLException {
+        Connection connectionHadith = DriverManager.getConnection("jdbc:sqlite:D:\\hadith.db");
+
+        Statement stmtHadith = connectionHadith.createStatement();
+
+        ResultSet rs = stmtHadith.executeQuery("select rowid as id, CollectionID, BookID, HadithID, text_ar_diacless, related_en from hadiths where rowid in (9)");
+
+        PreparedStatement statement = connectionHadith.prepareStatement("select CollectionID, BookID, HadithID, text_ar_diacless, related_en from hadiths where  CollectionID=? and BookID=? and HadithID=?");
+
+        while (rs.next()) {
+            String arabic = ArabicUtils.normalize(rs.getString(5).replace("(", "").replace(")", ""));
+
+            String related_en = rs.getString(6);
+            String[] split = related_en.split(",");
+
+            System.out.println("Check similarity for " + rs.getString(1) + " " + related_en);
+
+            ArrayList<String> strings = new ArrayList<>();
+            for (String s : split) {
+                String[] reference = s.split(":");
+                statement.setInt(1, Integer.parseInt(reference[1]));
+                statement.setInt(2, Integer.parseInt(reference[2]));
+                statement.setInt(3, Integer.parseInt(reference[3]));
+
+                ResultSet resultSet = statement.executeQuery();
+                while (resultSet.next()) {
+                    String test1 = resultSet.getString(4);
+                    strings.add(test1);
+                    System.out.println("for " + resultSet.getString(1) + ":" + resultSet.getString(2) + ":" + resultSet.getString(3));
+                }
+                resultSet.close();
+            }
+
+
+            StringSimilarityTest.textSimilarityTest(arabic, strings);
+        }
+        rs.close();
+        connectionHadith.close();
+
+
     }
 
     static class HadithObject {
