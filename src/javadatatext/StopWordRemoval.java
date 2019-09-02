@@ -15,46 +15,6 @@ public class StopWordRemoval implements Serializable, TextFilter {
     private boolean removeIPAddress = true;
     private boolean removeXmlTag = false;
 
-    public void setRemoveNumbers(boolean removeNumbers) {
-        this.removeNumbers = removeNumbers;
-    }
-
-    public void setRemoveIPAddress(boolean removeIPAddress){
-        this.removeIPAddress = removeIPAddress;
-    }
-
-    public boolean getRemoveNumbers() {
-        return removeNumbers;
-    }
-
-    public boolean getRemoveIPAddress(){
-        return removeIPAddress;
-    }
-
-    public boolean getRemoveXmlTag() {
-        return removeXmlTag;
-    }
-
-    public void setRemoveXmlTag(boolean removed){
-        this.removeXmlTag = removed;
-    }
-
-    public StopWordRemoval makeCopy() {
-        StopWordRemoval clone = new StopWordRemoval();
-        clone.removeNumbers = this.removeNumbers;
-        clone.removeIPAddress = this.removeIPAddress;
-        clone.removeXmlTag = this.removeXmlTag;
-        for (String w : stopWords) {
-            clone.stopWords.add(w);
-        }
-        return clone;
-    }
-
-    public boolean filter(String w) {
-        return accept(w);
-    }
-
-
     public StopWordRemoval() {
         String[] defaultStopWords = new String[]
                 {
@@ -590,6 +550,45 @@ public class StopWordRemoval implements Serializable, TextFilter {
         Collections.addAll(stopWords, defaultStopWords);
     }
 
+    public boolean getRemoveNumbers() {
+        return removeNumbers;
+    }
+
+    public void setRemoveNumbers(boolean removeNumbers) {
+        this.removeNumbers = removeNumbers;
+    }
+
+    public boolean getRemoveIPAddress() {
+        return removeIPAddress;
+    }
+
+    public void setRemoveIPAddress(boolean removeIPAddress) {
+        this.removeIPAddress = removeIPAddress;
+    }
+
+    public boolean getRemoveXmlTag() {
+        return removeXmlTag;
+    }
+
+    public void setRemoveXmlTag(boolean removed) {
+        this.removeXmlTag = removed;
+    }
+
+    public StopWordRemoval makeCopy() {
+        StopWordRemoval clone = new StopWordRemoval();
+        clone.removeNumbers = this.removeNumbers;
+        clone.removeIPAddress = this.removeIPAddress;
+        clone.removeXmlTag = this.removeXmlTag;
+        for (String w : stopWords) {
+            clone.stopWords.add(w);
+        }
+        return clone;
+    }
+
+    public boolean filter(String w) {
+        return accept(w);
+    }
+
     public void resetStopWords() {
         stopWords.clear();
     }
@@ -613,10 +612,10 @@ public class StopWordRemoval implements Serializable, TextFilter {
         if (removeNumbers && isNumeric(word)) {
             return false;
         }
-        if(removeIPAddress && isIPAddress(word)){
+        if (removeIPAddress && isIPAddress(word)) {
             return false;
         }
-        if(removeXmlTag && isXmlTag(word)){
+        if (removeXmlTag && isXmlTag(word)) {
             return false;
         }
         return !stopWords.contains(word);
@@ -627,10 +626,10 @@ public class StopWordRemoval implements Serializable, TextFilter {
         return word.charAt(0) >= '0' && word.charAt(0) <= '9';
     }
 
-    private boolean isIPAddress(String word){
-        if(IPAddressUtil.isIPv4LiteralAddress(word)){
+    private boolean isIPAddress(String word) {
+        if (IPAddressUtil.isIPv4LiteralAddress(word)) {
             return true;
-        } else if(IPAddressUtil.isIPv6LiteralAddress(word)){
+        } else if (IPAddressUtil.isIPv6LiteralAddress(word)) {
             return true;
         }
         return false;

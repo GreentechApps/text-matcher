@@ -16,13 +16,13 @@ public class LowerCase implements Serializable, TextFilter {
     @Override
     public List<String> filter(List<String> words) {
         List<String> result = new ArrayList<>();
-        for(int i=0; i < words.size(); ++i){
+        for (int i = 0; i < words.size(); ++i) {
             result.add(words.get(i).toLowerCase());
         }
         return result;
     }
 
-    public LowerCase makeCopy(){
+    public LowerCase makeCopy() {
         return new LowerCase();
     }
 }

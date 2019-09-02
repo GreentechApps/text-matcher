@@ -9,16 +9,6 @@ public class PorterStemmer implements TextFilter, Serializable {
 
     private static final long serialVersionUID = -283938886140264059L;
 
-
-    @Override
-    public List<String> filter(List<String> words) {
-        List<String> result = new ArrayList<>();
-        for (String word : words) {
-            result.add(stem(word));
-        }
-        return result;
-    }
-
     public static String stem(String word) {
         char[] b = word.toCharArray();
 
@@ -156,7 +146,6 @@ public class PorterStemmer implements TextFilter, Serializable {
         if (b[j] != b[j - 1]) return false;
         return IsConsonant(b, j);
     }
-
 
     /// <summary>
     /// Step1() gets rid of plurals and -ed or -ing. e.g.
@@ -471,7 +460,16 @@ public class PorterStemmer implements TextFilter, Serializable {
     }
 
     @Override
-    public Object clone(){
+    public List<String> filter(List<String> words) {
+        List<String> result = new ArrayList<>();
+        for (String word : words) {
+            result.add(stem(word));
+        }
+        return result;
+    }
+
+    @Override
+    public Object clone() {
         return new PorterStemmer();
     }
 

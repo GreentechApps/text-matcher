@@ -1,8 +1,6 @@
 package javadatatext;
 
 
-
-
 import java.io.Serializable;
 
 

@@ -11,47 +11,48 @@ import java.util.List;
 public class BasicVocabulary implements Serializable, Vocabulary {
     private static final long serialVersionUID = -4386706542135437234L;
     private List<String> words;
-    public BasicVocabulary(List<String> words){
+
+    public BasicVocabulary(List<String> words) {
         this.words = words;
     }
 
-    public BasicVocabulary(){
+    public BasicVocabulary() {
         words = new ArrayList<>();
     }
 
-    public int getLength(){
+    public int getLength() {
         return words.size();
     }
 
-    public String get(int index){
+    public String get(int index) {
         return words.get(index);
     }
 
-    public boolean contains(String word){
+    public boolean contains(String word) {
         return words.indexOf(word) != -1;
     }
 
-    public void add(String word){
+    public void add(String word) {
         words.add(word);
     }
 
-    public void setWords(List<String> words){
+    public void setWords(List<String> words) {
         this.words = words;
     }
 
     @Override
-    public Vocabulary makeCopy(){
+    public Vocabulary makeCopy() {
         BasicVocabulary clone = new BasicVocabulary(clone(words));
         return clone;
     }
 
-    private List<String> clone(List<String> rhs){
+    private List<String> clone(List<String> rhs) {
         List<String> clone = new ArrayList<>();
         clone.addAll(rhs);
         return clone;
     }
 
-    public int indexOf(String word){
+    public int indexOf(String word) {
         return words.indexOf(word);
     }
 }

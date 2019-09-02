@@ -1,16 +1,9 @@
-import javadatatext.*;
-import javafx.scene.paint.Stop;
-import stringsimilarity.*;
+import stringsimilarity.Cosine;
+import stringsimilarity.Jaccard;
+import stringsimilarity.JaroWinkler;
+import stringsimilarity.SorensenDice;
 
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.text.Normalizer;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
 
 class StringSimilarityTest {
 
@@ -131,16 +124,16 @@ class StringSimilarityTest {
     public static void textSimilarityTest(String dua, ArrayList<String> strings) {
         // Sorensen-Dice
         // =============
-        System.out.println("\nSubsectionSimilar");
-        SubsectionSimilar ss = new SubsectionSimilar(3);
-
-        // AB BC CD DE DF FG
-        // 1  1  1  1  0  0
-        // 1  1  1  0  1  1
-        // => 2 x 3 / (4 + 5) = 6/9 = 0.6666
-        for (String test : strings) {
-            System.out.println(ss.similarity(dua, test));
-        }
+//        System.out.println("\nSubsectionSimilar");
+//        SubsectionSimilar ss = new SubsectionSimilar(3);
+//
+//        // AB BC CD DE DF FG
+//        // 1  1  1  1  0  0
+//        // 1  1  1  0  1  1
+//        // => 2 x 3 / (4 + 5) = 6/9 = 0.6666
+//        for (String test : strings) {
+//            System.out.println(ss.similarity(dua, test));
+//        }
 
 
         // Sorensen-Dice
@@ -170,15 +163,15 @@ class StringSimilarityTest {
             System.out.println(cos.similarity(dua, test));
         }
 
-        System.out.println("\n");
-        cos = new Cosine(2);
-        // AB BA
-        // 2  1
-        // 1  1
-        // similarity = .95
-        for (String test : strings) {
-            System.out.println(cos.similarity(dua, test));
-        }
+//        System.out.println("\n");
+//        cos = new Cosine(2);
+//        // AB BA
+//        // 2  1
+//        // 1  1
+//        // similarity = .95
+//        for (String test : strings) {
+//            System.out.println(cos.similarity(dua, test));
+//        }
 
         // Jaccard index
         // =============
@@ -201,74 +194,74 @@ class StringSimilarityTest {
         for (String test : strings) {
             System.out.println(jw.similarity(dua, test));
         }
-
-        // Levenshtein
-        // ===========
-        System.out.println("\nLevenshtein");
-        Levenshtein levenshtein = new Levenshtein();
-        for (String test : strings) {
-            System.out.println(levenshtein.distance(dua, test));
-        }
-
-        // Damerau
-        // =======
-        System.out.println("\nDamerau");
-        Damerau damerau = new Damerau();
-
-        // 1 substitution
-        for (String test : strings) {
-            System.out.println(damerau.distance(dua, test));
-        }
-
-        // Optimal String Alignment
-        // =======
-        System.out.println("\nOptimal String Alignment");
-        OptimalStringAlignment osa = new OptimalStringAlignment();
-
-        //Will produce 3.0
-        for (String test : strings) {
-            System.out.println(osa.distance(dua, test));
-        }
-
-
-        // Longest Common Subsequence
-        // ==========================
-        System.out.println("\nLongest Common Subsequence");
-        LongestCommonSubsequence lcs = new LongestCommonSubsequence();
-
-        // Will produce 4.0
-        for (String test : strings) {
-            System.out.println(lcs.distance(dua, test));
-        }
-
-        // Normalized Levenshtein
-        // ======================
-        System.out.println("\nNormalized Levenshtein");
-        NormalizedLevenshtein l = new NormalizedLevenshtein();
-        for (String test : strings) {
-            System.out.println(l.distance(dua, test));
-        }
-
-        // QGram
-        // =====
-        System.out.println("\nQGram");
-        QGram dig = new QGram(2);
-
-        // AB BC CD CE
-        // 1  1  1  0
-        // 1  1  0  1
-        // Total: 2
-        for (String test : strings) {
-            System.out.println(dig.distance(dua, test));
-        }
-
-
-        System.out.println("\nFuzzy Score");
-        FuzzyScore score = new FuzzyScore(Locale.getDefault());
-
-        for (String test : strings) {
-            System.out.println(score.fuzzyScore(dua, test));
-        }
+//
+//        // Levenshtein
+//        // ===========
+//        System.out.println("\nLevenshtein");
+//        Levenshtein levenshtein = new Levenshtein();
+//        for (String test : strings) {
+//            System.out.println(levenshtein.distance(dua, test));
+//        }
+//
+//        // Damerau
+//        // =======
+//        System.out.println("\nDamerau");
+//        Damerau damerau = new Damerau();
+//
+//        // 1 substitution
+//        for (String test : strings) {
+//            System.out.println(damerau.distance(dua, test));
+//        }
+//
+//        // Optimal String Alignment
+//        // =======
+//        System.out.println("\nOptimal String Alignment");
+//        OptimalStringAlignment osa = new OptimalStringAlignment();
+//
+//        //Will produce 3.0
+//        for (String test : strings) {
+//            System.out.println(osa.distance(dua, test));
+//        }
+//
+//
+//        // Longest Common Subsequence
+//        // ==========================
+//        System.out.println("\nLongest Common Subsequence");
+//        LongestCommonSubsequence lcs = new LongestCommonSubsequence();
+//
+//        // Will produce 4.0
+//        for (String test : strings) {
+//            System.out.println(lcs.distance(dua, test));
+//        }
+//
+//        // Normalized Levenshtein
+//        // ======================
+//        System.out.println("\nNormalized Levenshtein");
+//        NormalizedLevenshtein l = new NormalizedLevenshtein();
+//        for (String test : strings) {
+//            System.out.println(l.distance(dua, test));
+//        }
+//
+//        // QGram
+//        // =====
+//        System.out.println("\nQGram");
+//        QGram dig = new QGram(2);
+//
+//        // AB BC CD CE
+//        // 1  1  1  0
+//        // 1  1  0  1
+//        // Total: 2
+//        for (String test : strings) {
+//            System.out.println(dig.distance(dua, test));
+//        }
+//
+//
+//        System.out.println("\nFuzzy Score");
+//        FuzzyScore score = new FuzzyScore(Locale.getDefault());
+//
+//        for (String test : strings) {
+//            System.out.println(score.fuzzyScore(dua, test));
+//        }
     }
 
 }

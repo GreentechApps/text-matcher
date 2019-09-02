@@ -1,4 +1,3 @@
-import stringsimilarity.Cosine;
 import stringsimilarity.SorensenDice;
 
 import java.sql.*;
@@ -25,9 +24,9 @@ public class HisnulMuslimInterlinking {
 //            remove puntuations
 //            stmtHisnul.execute("UPDATE duadetails SET arabic = replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(replace(arabic,'ـ',''),'\"',''),'(',''),')',''),'*',''),'،',''),',',''),'-',''),'.',''),'{',''),'}',''),'?',''),'_','')");
 
-            matchUsingSqliteMatch();
+//            matchUsingSqliteMatch();
 //            matchUsingDiceCoef();
-
+            removeDuplocates();
             System.out.println("Successful");
         } catch (Exception e) {
             e.printStackTrace();
@@ -41,7 +40,7 @@ public class HisnulMuslimInterlinking {
         Statement stmtHisnul = connectionHisnul.createStatement();
         Statement stmtHadith = connectionHadith.createStatement();
 
-        ResultSet rs = stmtHisnul.executeQuery("select _id, arabic, app_reference from duadetails where _id=328");
+        ResultSet rs = stmtHisnul.executeQuery("select _id, arabic, app_reference from duadetails where _id=146");
         String query = "update duadetails set app_reference = ? where _id=? and reference !=''";
         PreparedStatement preparedStatementUpdate = connectionHisnul.prepareStatement(query);
         while (rs.next()) {
@@ -61,9 +60,9 @@ public class HisnulMuslimInterlinking {
             while (rsH.next()) {
                 String reference = rsH.getString(1) + ":" + rsH.getString(2) + ":" + rsH.getString(3);
 
-                if (oldAppReference.contains("2:" + reference) || oldAppReference.contains("9:" + reference) || oldAppReference.contains("8:" + reference)) {
-                    continue;
-                }
+//                if (oldAppReference.contains("2:" + reference) || oldAppReference.contains("9:" + reference) || oldAppReference.contains("8:" + reference)) {
+//                    continue;
+//                }
 
                 app_reference.append(",").append("2:" + reference);
             }
@@ -96,12 +95,13 @@ public class HisnulMuslimInterlinking {
         Connection connectionHadith = DriverManager.getConnection("jdbc:sqlite:D:\\hadith.db");
         Statement stmtHisnul = connectionHisnul.createStatement();
 
-//            SorensenDice sd = new SorensenDice(2);
-        Cosine cos = new Cosine(2);
+        SorensenDice sd = new SorensenDice(2);
+        SorensenDice sd3 = new SorensenDice(3);
+//        Cosine cos = new Cosine(2);
 
         Statement stmtHadith = connectionHadith.createStatement();
 
-        ResultSet rsH = stmtHadith.executeQuery("select rowid as id, CollectionID, BookID, HadithID, text_ar_diacless, related_en from hadiths");
+        ResultSet rsH = stmtHadith.executeQuery("select rowid as id, CollectionID, BookID, HadithID, text_ar_diacless, related_en from hadiths ");
 
         ArrayList<HadithInterlinking.HadithObject> hadithObjects = new ArrayList<>(45146);
         long total = System.currentTimeMillis();
@@ -109,26 +109,26 @@ public class HisnulMuslimInterlinking {
         while (rsH.next()) {
             String arabic = ArabicUtils.normalize(rsH.getString(5).replace("(", "").replace(")", ""));
 
-            if (arabic.isEmpty() || arabic.length() < 10) {
+            if (arabic.isEmpty() || arabic.length() < 15) {
                 continue;
             }
             String reference = rsH.getString(2) + ":" + rsH.getString(3) + ":" + rsH.getString(4);
-            hadithObjects.add(new HadithInterlinking.HadithObject(cos.getProfile(arabic), rsH.getLong(1), reference, rsH.getString(6)));
+            hadithObjects.add(new HadithInterlinking.HadithObject(sd.getProfile(arabic), sd3.getProfile(arabic), rsH.getLong(1), reference, rsH.getString(6)));
         }
         rsH.close();
 
-        ResultSet rsHisnul = stmtHisnul.executeQuery("select _id, arabic, app_reference from duadetails where _id=328");
+        ResultSet rsHisnul = stmtHisnul.executeQuery("select _id, arabic, app_reference from duadetails where _id=146");
         PreparedStatement preparedStatementUpdate = connectionHisnul.prepareStatement("update duadetails set app_reference = ? where _id=? and reference !=''");
 
         while (rsHisnul.next()) {
             long t = System.currentTimeMillis();
             String arabic = ArabicUtils.normalize(rsHisnul.getString(2).replace("(", "").replace(")", ""));
 
-            if (arabic.isEmpty() || arabic.length() < 10) {
+            if (arabic.isEmpty() || arabic.length() < 15) {
                 continue;
             }
 
-            Map<String, Integer> arabicProfile = cos.getProfile(arabic);
+            Map<String, Integer> arabicProfile = sd.getProfile(arabic);
             String id = rsHisnul.getString(1);
             String oldAppReference = rsHisnul.getString(3);
 
@@ -137,16 +137,16 @@ public class HisnulMuslimInterlinking {
             for (HadithInterlinking.HadithObject checkForMatchHadith : hadithObjects) {
 
                 //if length is too much far that means they are really not similar
-                if (Math.abs(arabicProfile.size() - checkForMatchHadith.getProfile().size()) > 100) {
+                if (Math.abs(arabicProfile.size() - checkForMatchHadith.getProfileK2().size()) > 100) {
                     continue;
                 }
 
-                if (oldAppReference.contains("2:" + checkForMatchHadith.getReference()) || oldAppReference.contains("9:" + checkForMatchHadith.getReference()) || oldAppReference.contains("8:" + checkForMatchHadith.getReference())) {
-                    continue;
-                }
+//                if (oldAppReference.contains("2:" + checkForMatchHadith.getReference()) || oldAppReference.contains("9:" + checkForMatchHadith.getReference()) || oldAppReference.contains("8:" + checkForMatchHadith.getReference())) {
+//                    continue;
+//                }
 
-                double similarity = cos.similarity(arabicProfile, checkForMatchHadith.getProfile());
-                if (similarity > 0.9) {
+                double similarity = sd.similarity(arabicProfile, checkForMatchHadith.getProfileK2());
+                if (similarity > 0.75) {
                     related_en.append(",").append("8:" + checkForMatchHadith.getReference());
 
                     System.out.println("Found text similariry of " + similarity + " at " + checkForMatchHadith.getReference() + " for " + id);
@@ -172,5 +172,55 @@ public class HisnulMuslimInterlinking {
         connectionHadith.close();
         connectionHisnul.close();
         System.out.println("Done Total in " + (System.currentTimeMillis() - total) + " ms");
+    }
+
+    private static void removeDuplocates() throws SQLException {
+        Connection connectionHisnul = DriverManager.getConnection("jdbc:sqlite:D:\\hisnulbd.db");
+
+        Statement stmtHisnul = connectionHisnul.createStatement();
+
+        ResultSet rs = stmtHisnul.executeQuery("select _id, arabic, app_reference from duadetails");
+        String query = "update duadetails set app_reference = ? where _id=? and reference !=''";
+        PreparedStatement preparedStatementUpdate = connectionHisnul.prepareStatement(query);
+        while (rs.next()) {
+            String id = rs.getString(1);
+            String arabic = ArabicUtils.normalize(rs.getString(2).replace("(", "").replace(")", ""));
+
+            if (arabic.isEmpty() || arabic.length() < 15) {
+                continue;
+            }
+
+            String oldAppReference = rs.getString(3);
+            StringBuilder app_reference = new StringBuilder();
+
+            String[] strings = oldAppReference.split(",");
+
+            for (String s : strings) {
+
+                if (app_reference.toString().contains(s)) {
+                    continue;
+                }
+
+                app_reference.append(",").append(s);
+            }
+
+            if (app_reference.length() > 0) {
+                oldAppReference = app_reference.toString();
+                if (oldAppReference.startsWith(",")) {
+                    oldAppReference = oldAppReference.replaceFirst(",", "");
+                }
+
+                preparedStatementUpdate.setString(1, oldAppReference);
+                preparedStatementUpdate.setLong(2, Long.parseLong(id));
+                preparedStatementUpdate.executeUpdate();
+                System.out.println("Updated reference at " + id + ": " + app_reference);
+            }
+        }
+
+
+        System.out.println("Insert success");
+        rs.close();
+
+        connectionHisnul.close();
     }
 }

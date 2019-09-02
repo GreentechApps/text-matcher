@@ -14,21 +14,30 @@ import java.util.regex.Pattern;
 public class BasicTokenizer implements Tokenizer, Serializable {
 
 
-
-    /** A regular expression for letters and numbers. */
+    /**
+     * A regular expression for letters and numbers.
+     */
     private static final String regexLetterNumber = "[a-zA-Z0-9]";
 
-    /** A regular expression for non-letters and non-numbers. */
+    /**
+     * A regular expression for non-letters and non-numbers.
+     */
     private static final String regexNotLetterNumber = "[^a-zA-Z0-9]";
 
-    /** A regular expression for separators. */
+    /**
+     * A regular expression for separators.
+     */
     private static final String regexSeparator = "[\\?!()\";/\\|`]";
 
-    /** A regular expression for separators. */
+    /**
+     * A regular expression for separators.
+     */
     private static final String regexClitics =
             "'|:|-|'S|'D|'M|'LL|'RE|'VE|N'T|'s|'d|'m|'ll|'re|'ve|n't";
 
-    /** Abbreviations. */
+    /**
+     * Abbreviations.
+     */
     private static final List<String> abbrList =
             Arrays.asList("Co.", "Corp.", "vs.", "e.g.", "etc.", "ex.", "cf.",
                     "eg.", "Jan.", "Feb.", "Mar.", "Apr.", "Jun.", "Jul.", "Aug.",
@@ -39,10 +48,29 @@ public class BasicTokenizer implements Tokenizer, Serializable {
                     "MM.", "U.", "Mr.", "Jr.", "Ms.", "Mme.", "Mrs.", "Dr.",
                     "Ph.D.");
     private static final long serialVersionUID = -999803747111655623L;
-
+    private static BasicTokenizer tokenizer;
 
     public BasicTokenizer() {
 
+    }
+
+    private static BasicTokenizer getTokenizer() {
+        if (tokenizer == null) {
+            tokenizer = new BasicTokenizer();
+        }
+        return tokenizer;
+    }
+
+    public static List<String> doTokenize(String text) {
+        return getTokenizer().tokenize(text);
+    }
+
+    public static List<String> doTokenize(List<String> text) {
+        List<String> result = new ArrayList<>();
+        for (int i = 0; i < text.size(); ++i) {
+            result.addAll(doTokenize(text.get(i)));
+        }
+        return result;
     }
 
     /**
@@ -92,26 +120,5 @@ public class BasicTokenizer implements Tokenizer, Serializable {
         }
 
         return tokenList;
-    }
-
-    private static BasicTokenizer tokenizer;
-
-    private static BasicTokenizer getTokenizer(){
-        if(tokenizer==null){
-            tokenizer = new BasicTokenizer();
-        }
-        return tokenizer;
-    }
-
-    public static List<String> doTokenize(String text){
-        return getTokenizer().tokenize(text);
-    }
-
-    public static List<String> doTokenize(List<String> text){
-        List<String> result = new ArrayList<>();
-        for(int i=0; i < text.size(); ++i){
-            result.addAll(doTokenize(text.get(i)));
-        }
-        return result;
     }
 }

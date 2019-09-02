@@ -435,6 +435,10 @@ public class ArabicUtils {
                 .replaceAll("ئ", "ء")
                 .replaceAll("ة", "ه")
                 .replaceAll("گ", "ك");
+
+
+//                .replaceAll("(", "")
+//                .replaceAll(")", "");
         return input;
     }
 

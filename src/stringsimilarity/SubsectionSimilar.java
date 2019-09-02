@@ -109,7 +109,7 @@ public class SubsectionSimilar extends ShingleBased implements
             }
         }
 
-        return  inter / profile1.size();
+        return inter / profile1.size();
     }
 
     /**
