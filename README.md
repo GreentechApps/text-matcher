@@ -95,7 +95,8 @@ I had both arabic and english texts for the hadiths. I started with arabic text,
     
 ### 2. *Using Sqlite match*
 After tokenisation and normalisation is done, we initially testing uses sqlite's full-text-search mechanism to see if there were any matches using this system. We found many matches using this method however had to limit the match for longer texts only as it was very common that a small sentence matched in many hadiths and in that case they really were not similar. 
-"select CollectionID, BookID, HadithID from hadith where text_ar_diacless match ?"
+               
+               "select CollectionID, BookID, HadithID from hadith where text_ar_diacless match ?"
 
 ### 3. *Using text similarity algorithms* 
 With a readymade test sample we initially found out which were giving most accurate similarity results. The results were based on a decimal value between 0 and 1 where 1 means the texts are absolutely similar. Based on that Cosine Similarity and Sorenson-dice coefficient gave the best results on primary interpretation.
